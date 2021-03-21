@@ -9,17 +9,18 @@ class StockMove(models.Model):
     @api.multi
     def write(self, vals):
         result = super(StockMove, self).write(vals)
-        if self.product_id.name:
-            qty = 0
-            stocks = self.env['stock.quant'].search([
-                ('product_id.name', '=', self.product_id.name),
-                ('location_id.location_id.name', '=', 'TKTAS')
-            ])
+        for record in self:
+            if record.product_id.name:
+                qty = 0
+                stocks = self.env['stock.quant'].search([
+                    ('product_id.name', '=', record.product_id.name),
+                    ('location_id.location_id.name', '=', 'TKTAS')
+                ])
 
-            for stock in stocks:
-                qty += stock.qty
-            
-            self.send_field_updates(self.product_id.id, qty)
+                for stock in stocks:
+                    qty += stock.qty
+                
+                self.send_field_updates(record.product_id.id, qty)
 
     @api.model
     def send_field_updates(self, product_id, qty, action=''):
